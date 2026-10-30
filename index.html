@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123b50"><meta name="description" content="Offline personal budget manager">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml">
+<title>Elevor360D Personal Budget Manager V8.4</title>
+<style>
+body.licence-locked > header,body.licence-locked > main{visibility:hidden}
+
+:root{font-family:system-ui,Arial,sans-serif;color:#173447;background:#eef3f5}*{box-sizing:border-box}
+body{margin:0}header{background:#123b50;color:white;padding:18px 16px}header h1{margin:0;font-size:1.35rem}header small{opacity:.85}
+main{max-width:1000px;margin:auto;padding:14px}nav{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 15px}
+.mobile-menu{display:none}
+@media(max-width:650px){
+.mobile-menu{display:block;margin-bottom:12px}
+#tabs{display:none;flex-direction:column;gap:4px;background:white;border-radius:12px;padding:8px;box-shadow:0 2px 8px #17344712}
+#tabs.open{display:flex}
+#tabs button{width:100%;text-align:left;padding:12px}
+header h1{font-size:1.15rem}
+.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.metric{padding:11px}.metric strong{font-size:1.2rem}
+}
+@media(max-width:380px){.grid{grid-template-columns:1fr}}
+@media print{header,nav,.mobile-menu,#installPanel,#quickExpense,#quickIncome,button{display:none!important}main{max-width:none}.page{display:none!important}#dashboard{display:block!important}.card{box-shadow:none;border:1px solid #ddd}}
+button,.btn{border:0;border-radius:9px;background:#126c83;color:white;padding:10px 13px;font:inherit;cursor:pointer}
+button:hover{filter:brightness(.93)}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e6a532}
+nav button{background:#dbe8ed;color:#143c4d}nav button.active{background:#126c83;color:white}
+.card{background:white;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 8px #17344710}
+h2{margin:0 0 14px;font-size:1.2rem}h3{margin:12px 0 8px;font-size:1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.metric{background:#f2f8f9;padding:15px;border-radius:12px}.metric strong{display:block;font-size:1.55rem;margin-top:5px}
+label{display:block;font-weight:600;font-size:.9rem;margin:8px 0 4px}input,select{width:100%;padding:11px;border:1px solid #b9cbd1;border-radius:8px;background:white;font:inherit}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.row>*{flex:1;min-width:130px}
+table{border-collapse:collapse;width:100%;font-size:.91rem}th,td{text-align:left;border-bottom:1px solid #e1eaed;padding:9px 5px}td:last-child{text-align:right}
+.tablewrap{overflow-x:auto}.muted{color:#59717c;font-size:.87rem}.positive{color:#08764e}.negative{color:#b23b39}
+.bar{height:12px;background:#e5edf0;border-radius:10px;overflow:hidden}.bar span{display:block;background:#1b8793;height:100%}
+.danger{background:#b03c45}.secondary{background:#607e8b}.hidden{display:none!important}
+.notice{background:#fff5dc;padding:10px;border-radius:8px;font-size:.9rem}
+#dataStatus{font-size:.9rem;color:#17694e;margin:10px 0}
+#dataStatus:empty{display:none}
+@media(max-width:650px){.card{padding:13px}.row>button{min-width:95px}.tablewrap{max-width:100%}input,select,button{font-size:16px}#menuToggle{width:100%;text-align:left;font-weight:700}}
+footer{text-align:center;color:#59717c;padding:20px;font-size:.85rem}
+@media(max-width:550px){th,td{font-size:.8rem}main{padding:10px}}
+</style></head><body class="licence-locked">
+<header><div style="max-width:1000px;margin:auto"><h1>Elevor360D Personal Budget Manager</h1><small>Version 8.4 • Private, offline-first personal finances</small></div></header>
+<main><button id="menuToggle" type="button" class="mobile-menu" aria-controls="tabs" aria-expanded="false">☰ Menu — <span id="currentSection">Overview</span></button><nav id="tabs" aria-label="App sections"></nav>
+<section id="dashboard" class="page">
+<div id="installPanel" class="card">
+<div class="row"><div style="flex:3"><h2 style="margin:0 0 5px">Install Personal Budget Manager</h2><p class="muted" style="margin:0">Add the app to your phone, tablet or computer for convenient offline access.</p></div><button id="installBtn" type="button" style="flex:1">Install App</button></div>
+<p id="installHelp" class="notice hidden" role="status"></p>
+</div>
+<div class="card"><div class="row"><h2 style="margin:0">Your money at a glance</h2><button type="button" id="prevMonth" aria-label="Previous month">◀</button><input id="month" type="month" aria-label="Select month"><button type="button" id="nextMonth" aria-label="Next month">▶</button></div></div>
+<div class="card"><div class="row"><button id="quickExpense" type="button">+ Add expense</button><button id="quickIncome" type="button" class="secondary">+ Add income</button></div></div>
+<div class="grid" id="metrics"></div>
+<p class="muted" style="margin:0 0 14px">Remaining = recorded income minus recorded expenses for the selected month. It is not your bank account balance.</p>
+<div class="card"><h2>Spending by category</h2><div id="categorySummary"></div></div>
+<div class="card"><h2>Budget health</h2><div id="budgetHealth"></div></div>
+<div class="card"><h2>Monthly insights</h2><div id="insights"></div></div>
+<div class="card"><h2>Annual summary</h2><div class="row"><label for="reportYear">Year <input id="reportYear" type="number" min="2000" max="2100" step="1"></label><button id="printReport" type="button">Print / Save PDF report</button></div><div id="annualReport" class="tablewrap"></div></div>
+<div class="card"><h2>Six-month income and spending trend</h2><div id="trendChart"></div></div><div class="card"><h2>Upcoming bills</h2><div id="upcoming"></div></div>
+</section>
+<section id="transactions" class="page hidden">
+<div class="card"><h2 id="transactionHeading">Add transaction</h2><form id="transactionForm">
+<input type="hidden" id="txId"><div class="grid">
+<div><label for="txDate">Date</label><input id="txDate" type="date" required></div>
+<div><label for="txType">Type</label><select id="txType"><option value="expense">Expense</option><option value="income">Income</option></select></div>
+<div><label for="txAmount">Amount (£)</label><input id="txAmount" type="number" step="0.01" min="0.01" required></div>
+<div><label for="txCategory">Category</label><select id="txCategory"></select></div>
+<div><label for="txNote">Description</label><input id="txNote" maxlength="120" placeholder="e.g. Weekly groceries"></div>
+</div><p><button type="submit">Save transaction</button> <button type="button" class="secondary" id="clearTx">Clear form</button></p></form></div>
+<div class="card"><h2>Transactions</h2><p class="muted">Use the filters to find entries across all months.</p><div class="row"><input id="txSearch" placeholder="Search description or category" aria-label="Search transactions"><select id="txMonthFilter" aria-label="Filter by month"><option value="all">All months</option><option value="selected">Selected overview month</option></select><select id="txFilter"><option value="all">All types</option><option value="income">Income</option><option value="expense">Expenses</option></select></div><div class="tablewrap" id="txList"></div></div>
+</section>
+<section id="budgets" class="page hidden"><div class="card"><h2>Monthly category budgets</h2><p class="muted">Set a monthly limit for each expense category. These limits apply to every month until changed.</p><div id="budgetFields"></div><p><button id="saveBudgets">Save budgets</button></p></div><div class="card"><h2>Budget progress for selected month</h2><div id="budgetProgress"></div></div></section>
+<section id="bills" class="page hidden"><div class="card"><h2>Add or edit recurring bill</h2><form id="billForm"><input type="hidden" id="billId"><div class="grid"><div><label for="billName">Bill name</label><input id="billName" required maxlength="80"></div><div><label for="billAmount">Amount (£)</label><input id="billAmount" type="number" min=".01" step=".01" required></div><div><label for="billDay">Due day of month (1–31)</label><input id="billDay" type="number" min="1" max="31" required></div></div><p><button type="submit">Save bill</button> <button type="button" class="secondary" id="clearBill">Clear form</button></p></form></div><div class="card"><h2>Recurring bills</h2><p class="notice">Bills are reminders only. They are not automatically deducted from your balance. Record payments under Transactions.</p><div id="billList"></div></div></section>
+<section id="goals" class="page hidden"><div class="card"><h2>Savings goals</h2><form id="goalForm"><input type="hidden" id="goalId"><div class="grid"><div><label for="goalName">Goal</label><input id="goalName" required maxlength="80"></div><div><label for="goalTarget">Target (£)</label><input id="goalTarget" type="number" min=".01" step=".01" required></div><div><label for="goalSaved">Already saved (£)</label><input id="goalSaved" type="number" min="0" step=".01" required></div></div><p><button type="submit">Save goal</button> <button type="button" class="secondary" id="clearGoal">Clear form</button></p></form></div><div class="card"><h2>Your goals</h2><p class="muted">Savings amounts are manually maintained; they do not change automatically when transactions are added.</p><div id="goalList"></div></div></section>
+<section id="debts" class="page hidden">
+<div class="card"><h2>Debt repayment tracker</h2><p class="muted">Track credit cards, loans and repayments. Figures are entered manually and do not change your transaction balance automatically.</p>
+<form id="debtForm"><input type="hidden" id="debtId"><div class="grid">
+<div><label for="debtName">Debt name</label><input id="debtName" required maxlength="80" placeholder="e.g. Credit card"></div>
+<div><label for="debtOriginal">Original balance (£)</label><input id="debtOriginal" type="number" min=".01" step=".01" required></div>
+<div><label for="debtRemaining">Remaining balance (£)</label><input id="debtRemaining" type="number" min="0" step=".01" required></div>
+<div><label for="debtPayment">Planned monthly payment (£)</label><input id="debtPayment" type="number" min="0" step=".01" required></div>
+</div><p><button type="submit">Save debt</button> <button type="button" id="clearDebt" class="secondary">Clear form</button></p></form></div>
+<div class="card"><h2>Debt overview</h2><div id="debtSummary"></div><div id="debtList"></div></div></section>
+<section id="settings" class="page hidden"><div class="card"><h2>Backup and restore</h2><p>All financial information is stored in this browser on this device. Back up regularly, especially before changing phones or clearing browser data.</p><p><button id="exportJson">Download JSON backup</button> <button id="exportCsv" class="secondary">Export transactions CSV</button></p><label for="restoreFile">Restore JSON backup</label><input type="file" id="restoreFile" accept=".json,application/json"><p class="notice">Before restoring, the app will show the backup contents and offer to download a safety copy of your current records. Restoring replaces all existing data. Keep backups private.</p><p id="dataStatus" role="status" aria-live="polite"></p></div><div class="card"><h2>Install and privacy</h2><p class="muted">On Android Chrome: open the hosted app, tap the browser menu and choose Install app or Add to Home screen. On desktop Chrome or Edge, use the install icon in the address bar if available.</p><p>Offline access requires opening the hosted app once while connected to the internet. Your entries remain on this device; no account or cloud sync is included.</p><button id="wipe" class="danger">Delete all saved data</button></div></section>
+</main><footer>Elevor360D • Personal Budget Manager V8.3 • GBP (£)</footer>
+<script>
+(function(){
+const showError=function(message){
+ let b=document.getElementById('startupDiagnostic');
+ if(!b){b=document.createElement('div');b.id='startupDiagnostic';b.style.cssText='position:relative;z-index:1000000;background:#fff0d6;color:#512c00;padding:12px;font:14px system-ui;white-space:pre-wrap';document.body.prepend(b)}
+ b.textContent='Budget Manager startup issue: '+message;
+};
+window.addEventListener('error',e=>showError(e.message||'Unknown JavaScript error'));
+window.addEventListener('unhandledrejection',e=>showError(String(e.reason||'Unexpected startup error')));
+})();
+</script><script>
+// Customer release: E360 licence activation. Client-side access gate, not tamper-proof DRM.
+(()=>{'use strict';
+const API='https://elevor360d-access-manager.elevor360.workers.dev';
+const APP='personal-budget-manager'; // Must match the licence manager's App ID
+const STORAGE='elevor360d_budget_licence_v1';
+const DEVICE='elevor360d_budget_device_v1';
+const chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-';
+let id=localStorage.getItem(DEVICE);
+if(!id||!/^[-a-zA-Z0-9_]{12,128}$/.test(id)){id='dev_'+Array.from(crypto.getRandomValues(new Uint8Array(20)),v=>chars[v%chars.length]).join('');localStorage.setItem(DEVICE,id)}
+let started=false;
+function start(){if(started)return;started=true;document.getElementById('licenceGate')?.remove();document.body.classList.remove('licence-locked')}
+const gate=document.createElement('div');gate.id='licenceGate';gate.style.cssText='position:fixed;inset:0;z-index:999999;background:#10263d;color:white;display:flex;align-items:center;justify-content:center;padding:20px;font-family:system-ui,sans-serif';gate.innerHTML=`<div style="width:min(440px,100%);padding:24px;border-radius:16px;background:#203c58;box-shadow:0 10px 30px #0006"><h2 style="margin-top:0">Elevor360D Personal Budget Manager</h2><p>Activate your purchase once using the licence key supplied by the seller. Up to two devices per purchase.</p><label for="licCode">Licence key</label><input id="licCode" autocomplete="off" spellcheck="false" style="box-sizing:border-box;width:100%;padding:12px;margin:8px 0 14px;border-radius:8px;border:1px solid #8ba2b5;color:#111;background:#fff" placeholder="E360-..."><button id="licActivate" style="background:#f5bd46;color:#182636;border:0;border-radius:8px;padding:12px 18px;font-weight:bold;cursor:pointer;width:100%">Activate and open app</button><p id="licMessage" role="status" aria-live="polite" style="min-height:22px"></p><small>App ID: <strong>personal-budget-manager</strong> · Release V8.4</small><br><small>Your budget and financial records stay on this device. Once activated, this version can open offline on this device. Clearing browser storage may require a seller reset.</small></div>`;
+document.body.appendChild(gate);
+const msg=document.getElementById('licMessage'),inp=document.getElementById('licCode'),btn=document.getElementById('licActivate');
+async function post(path,code){const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);try{const r=await fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,appId:APP,deviceId:id}),signal:controller.signal});const data=await r.json();return {status:r.status,data}}finally{clearTimeout(timer)}}
+const saved=()=>{try{return JSON.parse(localStorage.getItem(STORAGE)||'null')}catch{return null}};
+async function check(){
+ const s=saved();
+ if(!s||!/^E360-[A-F0-9]{36}$/.test(s.code||''))return;
+ inp.value=s.code;
+ if(!navigator.onLine){msg.textContent='Offline: opening your previously activated app.';start();return}
+ msg.textContent='Checking saved licence…';
+ try{
+  const verified=await post('/verify',s.code);
+  if(verified.data.ok){start();return}
+  // A previously activated customer may have a saved key but no recorded
+  // device verification. Retry activation automatically with the same key.
+  const activated=await post('/activate',s.code);
+  if(activated.data.ok){
+   localStorage.setItem(STORAGE,JSON.stringify({code:s.code,activatedAt:s.activatedAt||new Date().toISOString()}));
+   start();return;
+  }
+  msg.textContent='Saved licence not accepted for '+APP+': '+(activated.data.error||activated.data.message||'Unknown error');
+ }catch(e){
+  msg.textContent='Could not reach the licence server. If previously activated, you can open offline.';
+  const offline=document.createElement('button');offline.textContent='Open previously activated app';
+  offline.style.cssText='padding:10px;margin-top:8px';offline.onclick=start;msg.after(offline);
+ }
+}
+btn.onclick=async()=>{const code=inp.value.trim().toUpperCase();if(!/^E360-[A-F0-9]{36}$/.test(code)){msg.textContent='Please enter a valid E360 licence key.';return}btn.disabled=true;msg.textContent='Checking activation…';try{const r=await post('/activate',code);if(r.data.ok){localStorage.setItem(STORAGE,JSON.stringify({code,activatedAt:new Date().toISOString()}));start()}else msg.textContent='Activation refused for App ID '+APP+' (HTTP '+r.status+'): '+(r.data.error||r.data.message||'No reason returned')+'. Check the licence record App ID in your Access Manager. If the manager accepts this code for the same App ID, confirm the website is loading V8.1.'}catch(e){msg.textContent='Connection failed. Connect to the internet and try again.'}finally{btn.disabled=false}};
+check();
+})();
+
+</script><script>
+
+'use strict';
+const EXPENSE=['Housing','Groceries','Utilities','Transport','Health','Insurance','Entertainment','Shopping','Eating Out','Other'];
+const INCOME=['Salary','Pension','Benefits','Side Income','Other'];
+const KEY='elevor360d-budget-v1'; // Preserve V1 data automatically
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('en-GB',{style:'currency',currency:'GBP'}).format(Number(n)||0);
+const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
+const uid=()=>crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();
+const blank=()=>({transactions:[],budgets:{},bills:[],goals:[],debts:[]});
+let data=blank();
+try{const stored=JSON.parse(localStorage.getItem(KEY));if(valid(stored))data={...stored,debts:Array.isArray(stored.debts)?stored.debts:[]}}catch(e){alert('Saved data could not be read. Restore a backup if available.')}
+function valid(d){return d&&typeof d==='object'&&Array.isArray(d.transactions)&&Array.isArray(d.bills)&&Array.isArray(d.goals)&&d.budgets&&typeof d.budgets==='object'&&!Array.isArray(d.budgets)&&d.transactions.every(t=>t&&typeof t.id==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(t.date)&&['income','expense'].includes(t.type)&&Number.isFinite(Number(t.amount))&&Number(t.amount)>0&&typeof t.category==='string')&&d.bills.every(b=>b&&typeof b.id==='string'&&typeof b.name==='string'&&Number(b.amount)>0&&Number.isInteger(Number(b.day))&&Number(b.day)>=1&&Number(b.day)<=31)&&d.goals.every(g=>g&&typeof g.id==='string'&&typeof g.name==='string'&&Number(g.target)>0&&Number(g.saved)>=0)&&(d.debts===undefined||(Array.isArray(d.debts)&&d.debts.every(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&Number(x.original)>0&&Number(x.remaining)>=0&&Number(x.payment)>=0)))}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert('Could not save. Browser storage may be full or unavailable.');return false}render();return true}
+function safe(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function options(){const type=$('txType').value;const old=$('txCategory').value;$('txCategory').innerHTML=(type==='income'?INCOME:EXPENSE).map(c=>`<option>${safe(c)}</option>`).join('');if([...$('txCategory').options].some(o=>o.value===old))$('txCategory').value=old}
+function show(page){$('tabs').classList.remove('open');$('menuToggle').setAttribute('aria-expanded','false');$('currentSection').textContent=tabs.find(x=>x[0]===page)?.[1]||'Overview';document.querySelectorAll('.page').forEach(e=>e.classList.toggle('hidden',e.id!==page));document.querySelectorAll('#tabs button').forEach(e=>e.classList.toggle('active',e.dataset.page===page));render();window.scrollTo(0,0)}
+const tabs=[['dashboard','Overview'],['transactions','Transactions'],['budgets','Budgets'],['bills','Bills'],['goals','Savings Goals'],['debts','Debts'],['settings','Backup & Install']];
+$('tabs').innerHTML=tabs.map(([id,label])=>`<button data-page="${id}">${label}</button>`).join('');
+$('menuToggle').addEventListener('click',()=>{const open=$('tabs').classList.toggle('open');$('menuToggle').setAttribute('aria-expanded',String(open))});
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(b)show(b.dataset.page)});
+$('month').value=today().slice(0,7);$('reportYear').value=Number(today().slice(0,4));$('txDate').value=today();$('txType').addEventListener('change',options);options();
+function currentTx(){return data.transactions.filter(t=>t.date.slice(0,7)===$('month').value)}
+function render(){
+const tx=currentTx(),inc=tx.filter(t=>t.type==='income').reduce((a,t)=>a+Number(t.amount),0),out=tx.filter(t=>t.type==='expense').reduce((a,t)=>a+Number(t.amount),0);
+$('metrics').innerHTML=[['Income',inc,'positive'],['Expenses',out,'negative'],['Remaining',inc-out,inc-out>=0?'positive':'negative'],['Transactions',tx.length,'']].map(([label,val,cls])=>`<div class="metric">${label}<strong class="${cls}">${label==='Transactions'?val:money(val)}</strong></div>`).join('');
+const prevDate=new Date(Number($('month').value.slice(0,4)),Number($('month').value.slice(5,7))-2,1);
+const prevKey=prevDate.getFullYear()+'-'+String(prevDate.getMonth()+1).padStart(2,'0');
+const prevExpenses=data.transactions.filter(t=>t.type==='expense'&&t.date.slice(0,7)===prevKey).reduce((n,t)=>n+Number(t.amount),0);
+const delta=out-prevExpenses;
+const maxCategory=EXPENSE.map(c=>({category:c,total:tx.filter(t=>t.type==='expense'&&t.category===c).reduce((n,t)=>n+Number(t.amount),0)})).sort((a,b)=>b.total-a.total)[0];
+$('insights').innerHTML=`<div class="grid"><div class="metric">Compared with previous month<strong class="${delta>0?'negative':'positive'}">${delta>0?'+':''}${money(delta)}</strong><span class="muted">${prevExpenses===0?'Previous month has no recorded expenses.':delta>0?'More spent than last month':delta<0?'Less spent than last month':'Same spending as last month'}</span></div><div class="metric">Largest expense category<strong>${maxCategory&&maxCategory.total? safe(maxCategory.category):'None yet'}</strong><span class="muted">${money(maxCategory?.total||0)}</span></div></div>`;
+const reportYear=Number($('reportYear').value)||new Date().getFullYear();
+const annual=Array.from({length:12},(_,i)=>{const k=reportYear+'-'+String(i+1).padStart(2,'0');const rows=data.transactions.filter(t=>t.date.slice(0,7)===k);return {month:new Date(reportYear,i,1).toLocaleDateString('en-GB',{month:'long'}),income:rows.filter(t=>t.type==='income').reduce((n,t)=>n+Number(t.amount),0),expenses:rows.filter(t=>t.type==='expense').reduce((n,t)=>n+Number(t.amount),0)}});
+const totals=annual.reduce((a,r)=>({income:a.income+r.income,expenses:a.expenses+r.expenses}),{income:0,expenses:0});
+$('annualReport').innerHTML=`<table><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Remaining</th></tr></thead><tbody>${annual.map(r=>`<tr><td>${r.month}</td><td>${money(r.income)}</td><td>${money(r.expenses)}</td><td>${money(r.income-r.expenses)}</td></tr>`).join('')}<tr><th>Total</th><th>${money(totals.income)}</th><th>${money(totals.expenses)}</th><th>${money(totals.income-totals.expenses)}</th></tr></tbody></table>`;
+const limits=EXPENSE.reduce((a,c)=>a+Number(data.budgets[c]||0),0);
+const tracked=EXPENSE.filter(c=>Number(data.budgets[c]||0)>0);
+const trackedSpent=tx.filter(t=>t.type==='expense'&&tracked.includes(t.category)).reduce((a,t)=>a+Number(t.amount),0);
+$('budgetHealth').innerHTML=tracked.length?`<div class="grid"><div class="metric">Budgeted categories<strong>${tracked.length}</strong></div><div class="metric">Total allocated<strong>${money(limits)}</strong></div><div class="metric">Spent in budgeted categories<strong>${money(trackedSpent)}</strong></div><div class="metric">Remaining budget<strong class="${limits-trackedSpent<0?'negative':'positive'}">${money(limits-trackedSpent)}</strong></div></div><p class="muted">Only categories with a budget above £0 are counted. Unbudgeted spending is excluded from this comparison.</p>`:'<p class="muted">No category budgets set yet. Open Budgets to add monthly spending limits.</p>';
+$('categorySummary').innerHTML=EXPENSE.map(c=>{const sum=tx.filter(t=>t.type==='expense'&&t.category===c).reduce((a,t)=>a+Number(t.amount),0);return sum?`<p>${safe(c)} <strong style="float:right">${money(sum)}</strong></p><div class="bar"><span style="width:${out?sum/out*100:0}%"></span></div>`:''}).join('')||'<p class="muted">No expenses recorded for this month.</p>';
+const chosen=$('month').value;
+const [yy,mm]=chosen.split('-').map(Number);
+const trends=Array.from({length:6},(_,i)=>{const dt=new Date(yy,mm-6+i,1);const key=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0');const a=data.transactions.filter(t=>t.date.slice(0,7)===key);return {label:dt.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}),income:a.filter(t=>t.type==='income').reduce((n,t)=>n+Number(t.amount),0),expense:a.filter(t=>t.type==='expense').reduce((n,t)=>n+Number(t.amount),0)}}); 
+const high=Math.max(1,...trends.flatMap(t=>[t.income,t.expense]));
+$('trendChart').innerHTML='<div class="muted">Income (teal) • Expenses (orange)</div>'+trends.map(t=>`<div style="display:grid;grid-template-columns:58px 1fr;gap:9px;align-items:center;margin:10px 0"><span class="muted">${t.label}</span><div><div title="Income ${money(t.income)}" style="background:#148b91;width:${t.income/high*100}%;min-height:10px;border-radius:4px"></div><div title="Expenses ${money(t.expense)}" style="background:#dc9444;width:${t.expense/high*100}%;min-height:10px;border-radius:4px;margin-top:3px"></div><small>${money(t.income)} / ${money(t.expense)}</small></div></div>`).join('');
+$('upcoming').innerHTML=data.bills.length?data.bills.slice().sort((a,b)=>a.day-b.day).map(b=>`<p>${safe(b.name)} — day ${b.day} <strong>${money(b.amount)}</strong></p>`).join(''):'<p class="muted">No recurring bills saved.</p>';
+const search=$('txSearch').value.toLowerCase(),filter=$('txFilter').value,monthFilter=$('txMonthFilter').value;
+const filtered=data.transactions.filter(t=>(filter==='all'||t.type===filter)&&(monthFilter==='all'||t.date.slice(0,7)===$('month').value)&&((t.note||'').toLowerCase().includes(search)||t.category.toLowerCase().includes(search))).sort((a,b)=>b.date.localeCompare(a.date));
+$('txList').innerHTML=filtered.length?`<table><thead><tr><th>Date</th><th>Details</th><th>Amount</th><th>Actions</th></tr></thead><tbody>${filtered.map(t=>`<tr><td>${safe(t.date)}</td><td>${safe(t.category)}<br><span class="muted">${safe(t.note||'')}</span></td><td class="${t.type==='income'?'positive':'negative'}">${t.type==='income'?'+':'−'}${money(t.amount)}</td><td><button data-edit-tx="${safe(t.id)}">Edit</button> <button class="danger" data-delete-tx="${safe(t.id)}">Delete</button></td></tr>`).join('')}</tbody></table>`:'<p class="muted">No matching transactions.</p>';
+$('budgetFields').innerHTML=EXPENSE.map(c=>`<div class="row"><label style="flex:2">${safe(c)}</label><input aria-label="Budget for ${safe(c)}" data-budget="${safe(c)}" type="number" min="0" step=".01" value="${Number(data.budgets[c]||0)}"></div>`).join('');
+$('budgetProgress').innerHTML=EXPENSE.map(c=>{const spent=tx.filter(t=>t.type==='expense'&&t.category===c).reduce((a,t)=>a+Number(t.amount),0),limit=Number(data.budgets[c]||0);return limit?`<p>${safe(c)}: ${money(spent)} of ${money(limit)} ${spent>limit?'<strong class="negative">Over budget</strong>':''}</p><div class="bar"><span style="width:${Math.min(100,spent/limit*100)}%;background:${spent>limit?'#b03c45':'#1b8793'}"></span></div>`:''}).join('')||'<p class="muted">Set a budget above to see progress.</p>';
+$('billList').innerHTML=data.bills.length?data.bills.map(b=>`<p><strong>${safe(b.name)}</strong> — ${money(b.amount)} • day ${b.day}<br><button data-edit-bill="${safe(b.id)}">Edit</button> <button class="danger" data-delete-bill="${safe(b.id)}">Delete</button></p>`).join(''):'<p class="muted">No bills yet.</p>';
+const debtTotal=data.debts.reduce((n,d)=>n+Number(d.remaining),0);
+$('debtSummary').innerHTML=`<div class="metric">Total remaining debt<strong>${money(debtTotal)}</strong></div>`;
+$('debtList').innerHTML=data.debts.length?data.debts.map(d=>{const progress=Math.max(0,Math.min(100,(1-d.remaining/d.original)*100));return `<p><strong>${safe(d.name)}</strong> — ${money(d.remaining)} remaining of ${money(d.original)}<br><span class="muted">Planned monthly payment: ${money(d.payment)}</span></p><div class="bar"><span style="width:${progress}%"></span></div><p><button data-edit-debt="${safe(d.id)}">Edit</button> <button class="danger" data-delete-debt="${safe(d.id)}">Delete</button></p>`}).join(''):'<p class="muted">No debts recorded.</p>';
+$('goalList').innerHTML=data.goals.length?data.goals.map(g=>`<p><strong>${safe(g.name)}</strong> — ${money(g.saved)} / ${money(g.target)} (${Math.round(g.saved/g.target*100)}%)</p><div class="bar"><span style="width:${Math.min(100,g.saved/g.target*100)}%"></span></div><p><button data-edit-goal="${safe(g.id)}">Edit</button> <button class="danger" data-delete-goal="${safe(g.id)}">Delete</button></p>`).join(''):'<p class="muted">No savings goals yet.</p>';
+}
+function changeMonth(n){const [y,m]=$('month').value.split('-').map(Number);const d=new Date(y,m-1+n,1);$('month').value=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');render()}
+$('prevMonth').onclick=()=>changeMonth(-1);$('nextMonth').onclick=()=>changeMonth(1);
+$('month').addEventListener('change',render);
+$('quickExpense').onclick=()=>{clearTx();$('txType').value='expense';options();$('txDate').value=($('month').value===today().slice(0,7)?today():$('month').value+'-01');show('transactions');$('txAmount').focus()};
+$('quickIncome').onclick=()=>{clearTx();$('txType').value='income';options();$('txDate').value=($('month').value===today().slice(0,7)?today():$('month').value+'-01');show('transactions');$('txAmount').focus()};$('reportYear').addEventListener('change',render);
+$('printReport').onclick=()=>{
+const year=Number($('reportYear').value);
+if(!Number.isInteger(year)||year<2000||year>2100)return alert('Select a valid year.');
+const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Budget Report ${year}</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#173447}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #ccc;padding:9px;text-align:left}h1{font-size:22px}</style></head><body><h1>Elevor360D Annual Budget Report — ${year}</h1>${$('annualReport').innerHTML}<p>Figures are based on transactions recorded in the app. This report is not a bank statement.</p></body></html>`;
+const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print your report.');return;}w.document.open();w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),350);
+};$('txSearch').addEventListener('input',render);$('txFilter').addEventListener('change',render);$('txMonthFilter').addEventListener('change',render);
+function clearTx(){$('transactionForm').reset();$('txId').value='';$('txDate').value=today();options();$('transactionHeading').textContent='Add transaction'}
+$('clearTx').onclick=clearTx;
+$('transactionForm').onsubmit=e=>{e.preventDefault();const id=$('txId').value||uid(),t={id,date:$('txDate').value,type:$('txType').value,amount:Number($('txAmount').value),category:$('txCategory').value,note:$('txNote').value.trim()};if(!t.date||!(t.amount>0))return alert('Enter a valid date and amount.');data.transactions=data.transactions.filter(x=>x.id!==id);data.transactions.push(t);if(save())clearTx()};
+$('txList').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.editTx||b.dataset.deleteTx,t=data.transactions.find(x=>x.id===id);if(!t)return;if(b.dataset.deleteTx){if(confirm('Delete this transaction?')){data.transactions=data.transactions.filter(x=>x.id!==id);save()}}else{$('txId').value=t.id;$('txDate').value=t.date;$('txType').value=t.type;options();$('txCategory').value=t.category;$('txAmount').value=t.amount;$('txNote').value=t.note||'';$('transactionHeading').textContent='Edit transaction';window.scrollTo(0,0)}};
+$('saveBudgets').onclick=()=>{document.querySelectorAll('[data-budget]').forEach(el=>data.budgets[el.dataset.budget]=Math.max(0,Number(el.value)||0));save();alert('Budgets saved.')};
+function clearBill(){$('billForm').reset();$('billId').value=''}$('clearBill').onclick=clearBill;
+$('billForm').onsubmit=e=>{e.preventDefault();const b={id:$('billId').value||uid(),name:$('billName').value.trim(),amount:Number($('billAmount').value),day:Number($('billDay').value)};if(!b.name||!(b.amount>0)||!Number.isInteger(b.day)||b.day<1||b.day>31)return alert('Check the bill details.');data.bills=data.bills.filter(x=>x.id!==b.id);data.bills.push(b);if(save())clearBill()};
+$('billList').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.editBill||b.dataset.deleteBill,x=data.bills.find(v=>v.id===id);if(!x)return;if(b.dataset.deleteBill){if(confirm('Delete this bill reminder?')){data.bills=data.bills.filter(v=>v.id!==id);save()}}else{$('billId').value=x.id;$('billName').value=x.name;$('billAmount').value=x.amount;$('billDay').value=x.day;window.scrollTo(0,0)}};
+function clearGoal(){$('goalForm').reset();$('goalId').value=''}$('clearGoal').onclick=clearGoal;
+$('goalForm').onsubmit=e=>{e.preventDefault();const g={id:$('goalId').value||uid(),name:$('goalName').value.trim(),target:Number($('goalTarget').value),saved:Number($('goalSaved').value)};if(!g.name||!(g.target>0)||!Number.isFinite(g.saved)||g.saved<0)return alert('Check the goal details.');data.goals=data.goals.filter(x=>x.id!==g.id);data.goals.push(g);if(save())clearGoal()};
+$('goalList').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.editGoal||b.dataset.deleteGoal,g=data.goals.find(v=>v.id===id);if(!g)return;if(b.dataset.deleteGoal){if(confirm('Delete this savings goal?')){data.goals=data.goals.filter(v=>v.id!==id);save()}}else{$('goalId').value=g.id;$('goalName').value=g.name;$('goalTarget').value=g.target;$('goalSaved').value=g.saved;window.scrollTo(0,0)}};
+function clearDebt(){$('debtForm').reset();$('debtId').value=''}
+$('clearDebt').onclick=clearDebt;
+$('debtForm').onsubmit=e=>{e.preventDefault();const d={id:$('debtId').value||uid(),name:$('debtName').value.trim(),original:Number($('debtOriginal').value),remaining:Number($('debtRemaining').value),payment:Number($('debtPayment').value)};if(!d.name||!(d.original>0)||!Number.isFinite(d.remaining)||d.remaining<0||!Number.isFinite(d.payment)||d.payment<0)return alert('Check the debt details.');data.debts=data.debts.filter(x=>x.id!==d.id);data.debts.push(d);if(save())clearDebt()};
+$('debtList').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.editDebt||b.dataset.deleteDebt,d=data.debts.find(x=>x.id===id);if(!d)return;if(b.dataset.deleteDebt){if(confirm('Delete this debt?')){data.debts=data.debts.filter(x=>x.id!==id);save()}}else{$('debtId').value=d.id;$('debtName').value=d.name;$('debtOriginal').value=d.original;$('debtRemaining').value=d.remaining;$('debtPayment').value=d.payment;window.scrollTo(0,0)}};
+function backupObject(){return {app:'Elevor360D Personal Budget Manager',version:7,...data}}
+function backupNow(prefix='elevor360d-budget-backup'){download(prefix+'-'+today()+'.json',JSON.stringify(backupObject(),null,2),'application/json')}
+function dataCounts(d){return `${d.transactions.length} transactions, ${d.bills.length} bills, ${d.goals.length} savings goals and ${(d.debts||[]).length} debts`}
+function download(filename,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('exportJson').onclick=()=>{backupNow();$('dataStatus').textContent='Backup requested: '+dataCounts(data)+'. Check your Downloads folder.'};
+$('exportCsv').onclick=()=>{const rows=[['Date','Type','Category','Description','Amount GBP'],...data.transactions.map(t=>[t.date,t.type,t.category,t.note||'',t.amount])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');download('budget-transactions-'+today()+'.csv','\uFEFF'+csv,'text/csv;charset=utf-8')};
+$('restoreFile').onchange=async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{
+  if(file.size>5e6)throw Error('File too large (maximum 5 MB)');
+  const d=JSON.parse(await file.text());if(!valid(d))throw Error('Invalid or incompatible backup');
+  const message=`Backup: ${file.name}\nContains: ${dataCounts(d)}.\n\nCurrent device: ${dataCounts(data)}.\n\nRestore will REPLACE all current records. Continue?`;
+  if(!confirm(message))return;
+  if(confirm('Download a safety backup of your CURRENT records before replacing them?')){backupNow('elevor360d-before-restore');alert('Safety backup requested. Please check your Downloads folder before continuing.');}
+  if(!confirm('Final confirmation: replace current records with the selected backup?'))return;
+  const previous=data;
+  data={transactions:d.transactions,budgets:d.budgets,bills:d.bills,goals:d.goals,debts:d.debts||[]};
+  if(!save()){data=previous;render();throw Error('Device storage could not be updated; existing records have been retained')}
+  clearTx();clearBill();clearGoal();clearDebt();
+  $('dataStatus').textContent='Restored '+dataCounts(data)+'.';alert('Backup restored successfully.');
+ }catch(err){alert('Restore failed: '+err.message)}finally{e.target.value=''}
+};
+$('wipe').onclick=()=>{if(confirm('Permanently delete ALL saved budget data on this device?')&&confirm('Are you absolutely sure? This cannot be undone without a backup.')){data=blank();save();clearTx();clearBill();clearGoal();clearDebt();alert('Data deleted.')}};
+let deferredPrompt=null;
+const installPanel=$('installPanel'),installButton=$('installBtn'),installHelp=$('installHelp');
+const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+function showInstallHelp(message){installHelp.textContent=message;installHelp.classList.remove('hidden')}
+function refreshInstall(){
+ const installed=isStandalone();
+ installPanel.classList.toggle('hidden',installed);
+ if(installed){deferredPrompt=null;installHelp.classList.add('hidden')}
+}
+window.addEventListener('beforeinstallprompt',event=>{
+ event.preventDefault();
+ deferredPrompt=event;
+ installHelp.classList.add('hidden');
+ refreshInstall();
+});
+installButton.addEventListener('click',async()=>{
+ if(isStandalone()){refreshInstall();return}
+ if(deferredPrompt){
+  const event=deferredPrompt;
+  deferredPrompt=null;
+  try{
+   await event.prompt();
+   const choice=await event.userChoice;
+   if(choice&&choice.outcome==='accepted')showInstallHelp('Installation accepted. When it finishes, open the app from your home screen or apps list.');
+   else showInstallHelp('Installation was cancelled. To retry, use the browser menu and choose Install app.');
+  }catch(err){showInstallHelp('The install prompt is unavailable. Open the Chrome or Edge browser menu and choose Install app or Add to Home screen.')}
+  return;
+ }
+ if(location.protocol==='file:'){showInstallHelp('To install, upload the app files to GitHub Pages and open its HTTPS address in Chrome or Edge. Opening index.html directly from a ZIP or folder cannot install the app.');return}
+ if(!window.isSecureContext){showInstallHelp('Installation requires an HTTPS website. Open the secure GitHub Pages link.');return}
+ if(/iPad|iPhone|iPod/.test(navigator.userAgent)){showInstallHelp('On iPhone or iPad: open this page in Safari, tap Share, then Add to Home Screen.');return}
+ if(/Android/i.test(navigator.userAgent)){showInstallHelp('In Chrome on Android: tap the three-dot menu (⋮), then Install app or Add to Home screen. If already installed, open the app from your home screen.');return}
+ showInstallHelp('In Chrome or Edge: use the install icon in the address bar, or open the three-dot menu and select Install app. If already installed, launch it from your apps list.');
+});
+window.addEventListener('appinstalled',()=>{deferredPrompt=null;installPanel.classList.add('hidden')});
+const displayMode=window.matchMedia('(display-mode: standalone)');
+if(displayMode.addEventListener)displayMode.addEventListener('change',refreshInstall);
+window.addEventListener('pageshow',refreshInstall);
+refreshInstall();
+if('serviceWorker'in navigator&&location.protocol!=='file:')window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));
+show('dashboard');
+
+</script></body></html>
