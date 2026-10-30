@@ -1,7 +1,6 @@
-Elevor360D PERSONAL BUDGET MANAGER V5.1 — INSTALL FIX
-This release fixes install-button guidance and adds standard 192px/512px PNG PWA icons for Chrome/Edge installability.
-Upload ALL SIX files to your GitHub Pages repository: index.html, sw.js, manifest.webmanifest, icon.svg, icon-192.png, icon-512.png.
-Then reload the HTTPS GitHub Pages URL while online. On Android Chrome, tap Install App on the Overview page. If the browser does not provide an automatic prompt, the button explains how to install from the Chrome menu.
-The button disappears when the installed app runs in standalone mode and when the browser emits the appinstalled event. A normal browser tab may still display the button even after installation.
-Do not open the HTML directly from the ZIP for PWA installation.
-All V5 features and the existing data storage key are retained. Back up data before replacing files.
+Elevor360D PERSONAL BUDGET MANAGER V6
+NEW: Compact collapsible mobile menu with section name and accessible expanded state; cleaner two-column dashboard metrics on mobile; improved mobile spacing and clear explanation of the monthly remaining figure.
+RETAINED: Working V5.1 main-screen Install App button, PNG PWA icons, all budgeting, debt, bills, goals, charts, annual reports, backup/restore, CSV export and offline functionality.
+INSTALL: Upload all six web files (index.html, sw.js, manifest.webmanifest, icon.svg, icon-192.png, icon-512.png) to the SAME GitHub Pages repository. Replace existing files and refresh online.
+BACKUP: Make a JSON backup before upgrading. The localStorage key is unchanged to preserve existing data on the same origin/browser.
+IMPORTANT: The app does not sync to banks or cloud services. Bill reminders are informational; no push notifications or automatic bill deductions.

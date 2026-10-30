@@ -2,11 +2,23 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#123b50"><meta name="description" content="Offline personal budget manager">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml">
-<title>Elevor360D Personal Budget Manager V5.1</title>
+<title>Elevor360D Personal Budget Manager V6</title>
 <style>
 :root{font-family:system-ui,Arial,sans-serif;color:#173447;background:#eef3f5}*{box-sizing:border-box}
 body{margin:0}header{background:#123b50;color:white;padding:18px 16px}header h1{margin:0;font-size:1.35rem}header small{opacity:.85}
 main{max-width:1000px;margin:auto;padding:14px}nav{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 15px}
+.mobile-menu{display:none}
+@media(max-width:650px){
+.mobile-menu{display:block;margin-bottom:12px}
+#tabs{display:none;flex-direction:column;gap:4px;background:white;border-radius:12px;padding:8px;box-shadow:0 2px 8px #17344712}
+#tabs.open{display:flex}
+#tabs button{width:100%;text-align:left;padding:12px}
+header h1{font-size:1.15rem}
+.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.metric{padding:11px}.metric strong{font-size:1.2rem}
+}
+@media(max-width:380px){.grid{grid-template-columns:1fr}}
+@media print{header,nav,.mobile-menu,#installPanel,#quickExpense,#quickIncome,button{display:none!important}main{max-width:none}.page{display:none!important}#dashboard{display:block!important}.card{box-shadow:none;border:1px solid #ddd}}
 button,.btn{border:0;border-radius:9px;background:#126c83;color:white;padding:10px 13px;font:inherit;cursor:pointer}
 button:hover{filter:brightness(.93)}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e6a532}
 nav button{background:#dbe8ed;color:#143c4d}nav button.active{background:#126c83;color:white}
@@ -24,16 +36,17 @@ table{border-collapse:collapse;width:100%;font-size:.91rem}th,td{text-align:left
 footer{text-align:center;color:#59717c;padding:20px;font-size:.85rem}
 @media(max-width:550px){th,td{font-size:.8rem}main{padding:10px}}
 </style></head><body>
-<header><div style="max-width:1000px;margin:auto"><h1>Elevor360D Personal Budget Manager</h1><small>Version 5.1 • Private, offline-first personal finances</small></div></header>
-<main><nav id="tabs"></nav>
+<header><div style="max-width:1000px;margin:auto"><h1>Elevor360D Personal Budget Manager</h1><small>Version 6 • Private, offline-first personal finances</small></div></header>
+<main><button id="menuToggle" type="button" class="mobile-menu" aria-controls="tabs" aria-expanded="false">☰ Menu — <span id="currentSection">Overview</span></button><nav id="tabs" aria-label="App sections"></nav>
 <section id="dashboard" class="page">
 <div id="installPanel" class="card">
 <div class="row"><div style="flex:3"><h2 style="margin:0 0 5px">Install Personal Budget Manager</h2><p class="muted" style="margin:0">Add the app to your phone, tablet or computer for convenient offline access.</p></div><button id="installBtn" type="button" style="flex:1">Install App</button></div>
 <p id="installHelp" class="notice hidden" role="status"></p>
 </div>
-<div class="card"><div class="row"><h2 style="margin:0">Monthly overview</h2><button type="button" id="prevMonth" aria-label="Previous month">◀</button><input id="month" type="month" aria-label="Select month"><button type="button" id="nextMonth" aria-label="Next month">▶</button></div></div>
+<div class="card"><div class="row"><h2 style="margin:0">Your money at a glance</h2><button type="button" id="prevMonth" aria-label="Previous month">◀</button><input id="month" type="month" aria-label="Select month"><button type="button" id="nextMonth" aria-label="Next month">▶</button></div></div>
 <div class="card"><div class="row"><button id="quickExpense" type="button">+ Add expense</button><button id="quickIncome" type="button" class="secondary">+ Add income</button></div></div>
 <div class="grid" id="metrics"></div>
+<p class="muted" style="margin:0 0 14px">Remaining = recorded income minus recorded expenses for the selected month. It is not your bank account balance.</p>
 <div class="card"><h2>Spending by category</h2><div id="categorySummary"></div></div>
 <div class="card"><h2>Budget health</h2><div id="budgetHealth"></div></div>
 <div class="card"><h2>Monthly insights</h2><div id="insights"></div></div>
@@ -64,7 +77,7 @@ footer{text-align:center;color:#59717c;padding:20px;font-size:.85rem}
 </div><p><button type="submit">Save debt</button> <button type="button" id="clearDebt" class="secondary">Clear form</button></p></form></div>
 <div class="card"><h2>Debt overview</h2><div id="debtSummary"></div><div id="debtList"></div></div></section>
 <section id="settings" class="page hidden"><div class="card"><h2>Backup and restore</h2><p>All financial information is stored in this browser on this device. Back up regularly, especially before changing phones or clearing browser data.</p><p><button id="exportJson">Download JSON backup</button> <button id="exportCsv" class="secondary">Export transactions CSV</button></p><label for="restoreFile">Restore JSON backup</label><input type="file" id="restoreFile" accept=".json,application/json"><p class="notice">Restoring replaces all existing data. Keep your backup private because it contains financial details.</p></div><div class="card"><h2>Install and privacy</h2><p class="muted">On Android Chrome: open the hosted app, tap the browser menu and choose Install app or Add to Home screen. On desktop Chrome or Edge, use the install icon in the address bar if available.</p><p>Offline access requires opening the hosted app once while connected to the internet. Your entries remain on this device; no account or cloud sync is included.</p><button id="wipe" class="danger">Delete all saved data</button></div></section>
-</main><footer>Elevor360D • Personal Budget Manager V5.1 • GBP (£)</footer>
+</main><footer>Elevor360D • Personal Budget Manager V6 • GBP (£)</footer>
 <script>
 'use strict';
 const EXPENSE=['Housing','Groceries','Utilities','Transport','Health','Insurance','Entertainment','Shopping','Eating Out','Other'];
@@ -81,9 +94,10 @@ function valid(d){return d&&typeof d==='object'&&Array.isArray(d.transactions)&&
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert('Could not save. Browser storage may be full or unavailable.');return false}render();return true}
 function safe(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function options(){const type=$('txType').value;const old=$('txCategory').value;$('txCategory').innerHTML=(type==='income'?INCOME:EXPENSE).map(c=>`<option>${safe(c)}</option>`).join('');if([...$('txCategory').options].some(o=>o.value===old))$('txCategory').value=old}
-function show(page){document.querySelectorAll('.page').forEach(e=>e.classList.toggle('hidden',e.id!==page));document.querySelectorAll('#tabs button').forEach(e=>e.classList.toggle('active',e.dataset.page===page));render();window.scrollTo(0,0)}
+function show(page){$('tabs').classList.remove('open');$('menuToggle').setAttribute('aria-expanded','false');$('currentSection').textContent=tabs.find(x=>x[0]===page)?.[1]||'Overview';document.querySelectorAll('.page').forEach(e=>e.classList.toggle('hidden',e.id!==page));document.querySelectorAll('#tabs button').forEach(e=>e.classList.toggle('active',e.dataset.page===page));render();window.scrollTo(0,0)}
 const tabs=[['dashboard','Overview'],['transactions','Transactions'],['budgets','Budgets'],['bills','Bills'],['goals','Savings Goals'],['debts','Debts'],['settings','Backup & Install']];
 $('tabs').innerHTML=tabs.map(([id,label])=>`<button data-page="${id}">${label}</button>`).join('');
+$('menuToggle').addEventListener('click',()=>{const open=$('tabs').classList.toggle('open');$('menuToggle').setAttribute('aria-expanded',String(open))});
 $('tabs').addEventListener('click',e=>{const b=e.target.closest('button[data-page]');if(b)show(b.dataset.page)});
 $('month').value=today().slice(0,7);$('reportYear').value=Number(today().slice(0,4));$('txDate').value=today();$('txType').addEventListener('change',options);options();
 function currentTx(){return data.transactions.filter(t=>t.date.slice(0,7)===$('month').value)}
