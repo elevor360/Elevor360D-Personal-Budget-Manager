@@ -1,40 +1,9 @@
-GARDENER QUOTE PRO V4 — Elevor360D
+Elevor360D Personal Budget Manager V8.1 — Licence diagnostics
 
-FINAL ETSY-READY EDITION
+This is based on the exact V8 ZIP supplied by the user. No budgeting data, API endpoint, App ID or device-ID storage key was changed.
 
-Upload the CONTENTS of this folder to the root of your GitHub repository.
-Do not upload only the ZIP if you want GitHub Pages to run the app.
+V8.1 displays the App ID on the activation screen and shows the exact HTTP status and Worker rejection reason on failure. It also fetches licence.js network-first to avoid serving a stale activation script from the old service-worker cache.
 
-Main files:
-- index.html
-- style.css
-- app.js
-- manifest.webmanifest
-- sw.js
-- icon.svg
+UPLOAD all 8 files to the same GitHub Pages repository and refresh online. Confirm activation screen says Release V8.1 before testing. Existing local budget records remain on the same origin. Back up before updating.
 
-V4 includes:
-- Dashboard and quick-start workflow
-- Customer and property records
-- Gardening-specific garden area measurements
-- Quick gardening job presets
-- Materials and plants
-- Labour, waste, mileage and extra costs
-- Markup and optional VAT
-- Recurring maintenance frequency
-- Professional quotes and invoices
-- Deposits, payments and outstanding balances
-- Before/after job photos
-- Customer signatures
-- Actual expenses and estimated profit reporting
-- Reusable custom templates
-- Business details and logo
-- Built-in Help / User Guide
-- Backup / Restore and protected Reset
-- Installable offline PWA
-
-IMPORTANT
-App data is stored locally in the browser/device. Use Backup regularly.
-Always check measurements, prices, material quantities, VAT and final quotes before sending them to customers.
-
-Elevor360D
+If the Worker rejects a new code, check its recorded App ID in the manager. The manager test used one device slot; a separate browser/device can use the second slot. Do not share licence keys or admin secrets.
