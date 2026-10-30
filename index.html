@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#123b50"><meta name="description" content="Offline personal budget manager">
 <link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml">
-<title>Elevor360D Personal Budget Manager V6</title>
+<title>Elevor360D Personal Budget Manager V7</title>
 <style>
 :root{font-family:system-ui,Arial,sans-serif;color:#173447;background:#eef3f5}*{box-sizing:border-box}
 body{margin:0}header{background:#123b50;color:white;padding:18px 16px}header h1{margin:0;font-size:1.35rem}header small{opacity:.85}
@@ -33,10 +33,13 @@ table{border-collapse:collapse;width:100%;font-size:.91rem}th,td{text-align:left
 .bar{height:12px;background:#e5edf0;border-radius:10px;overflow:hidden}.bar span{display:block;background:#1b8793;height:100%}
 .danger{background:#b03c45}.secondary{background:#607e8b}.hidden{display:none!important}
 .notice{background:#fff5dc;padding:10px;border-radius:8px;font-size:.9rem}
+#dataStatus{font-size:.9rem;color:#17694e;margin:10px 0}
+#dataStatus:empty{display:none}
+@media(max-width:650px){.card{padding:13px}.row>button{min-width:95px}.tablewrap{max-width:100%}input,select,button{font-size:16px}#menuToggle{width:100%;text-align:left;font-weight:700}}
 footer{text-align:center;color:#59717c;padding:20px;font-size:.85rem}
 @media(max-width:550px){th,td{font-size:.8rem}main{padding:10px}}
 </style></head><body>
-<header><div style="max-width:1000px;margin:auto"><h1>Elevor360D Personal Budget Manager</h1><small>Version 6 • Private, offline-first personal finances</small></div></header>
+<header><div style="max-width:1000px;margin:auto"><h1>Elevor360D Personal Budget Manager</h1><small>Version 7 • Private, offline-first personal finances</small></div></header>
 <main><button id="menuToggle" type="button" class="mobile-menu" aria-controls="tabs" aria-expanded="false">☰ Menu — <span id="currentSection">Overview</span></button><nav id="tabs" aria-label="App sections"></nav>
 <section id="dashboard" class="page">
 <div id="installPanel" class="card">
@@ -76,8 +79,8 @@ footer{text-align:center;color:#59717c;padding:20px;font-size:.85rem}
 <div><label for="debtPayment">Planned monthly payment (£)</label><input id="debtPayment" type="number" min="0" step=".01" required></div>
 </div><p><button type="submit">Save debt</button> <button type="button" id="clearDebt" class="secondary">Clear form</button></p></form></div>
 <div class="card"><h2>Debt overview</h2><div id="debtSummary"></div><div id="debtList"></div></div></section>
-<section id="settings" class="page hidden"><div class="card"><h2>Backup and restore</h2><p>All financial information is stored in this browser on this device. Back up regularly, especially before changing phones or clearing browser data.</p><p><button id="exportJson">Download JSON backup</button> <button id="exportCsv" class="secondary">Export transactions CSV</button></p><label for="restoreFile">Restore JSON backup</label><input type="file" id="restoreFile" accept=".json,application/json"><p class="notice">Restoring replaces all existing data. Keep your backup private because it contains financial details.</p></div><div class="card"><h2>Install and privacy</h2><p class="muted">On Android Chrome: open the hosted app, tap the browser menu and choose Install app or Add to Home screen. On desktop Chrome or Edge, use the install icon in the address bar if available.</p><p>Offline access requires opening the hosted app once while connected to the internet. Your entries remain on this device; no account or cloud sync is included.</p><button id="wipe" class="danger">Delete all saved data</button></div></section>
-</main><footer>Elevor360D • Personal Budget Manager V6 • GBP (£)</footer>
+<section id="settings" class="page hidden"><div class="card"><h2>Backup and restore</h2><p>All financial information is stored in this browser on this device. Back up regularly, especially before changing phones or clearing browser data.</p><p><button id="exportJson">Download JSON backup</button> <button id="exportCsv" class="secondary">Export transactions CSV</button></p><label for="restoreFile">Restore JSON backup</label><input type="file" id="restoreFile" accept=".json,application/json"><p class="notice">Before restoring, the app will show the backup contents and offer to download a safety copy of your current records. Restoring replaces all existing data. Keep backups private.</p><p id="dataStatus" role="status" aria-live="polite"></p></div><div class="card"><h2>Install and privacy</h2><p class="muted">On Android Chrome: open the hosted app, tap the browser menu and choose Install app or Add to Home screen. On desktop Chrome or Edge, use the install icon in the address bar if available.</p><p>Offline access requires opening the hosted app once while connected to the internet. Your entries remain on this device; no account or cloud sync is included.</p><button id="wipe" class="danger">Delete all saved data</button></div></section>
+</main><footer>Elevor360D • Personal Budget Manager V7 • GBP (£)</footer>
 <script>
 'use strict';
 const EXPENSE=['Housing','Groceries','Utilities','Transport','Health','Insurance','Entertainment','Shopping','Eating Out','Other'];
@@ -162,10 +165,28 @@ function clearDebt(){$('debtForm').reset();$('debtId').value=''}
 $('clearDebt').onclick=clearDebt;
 $('debtForm').onsubmit=e=>{e.preventDefault();const d={id:$('debtId').value||uid(),name:$('debtName').value.trim(),original:Number($('debtOriginal').value),remaining:Number($('debtRemaining').value),payment:Number($('debtPayment').value)};if(!d.name||!(d.original>0)||!Number.isFinite(d.remaining)||d.remaining<0||!Number.isFinite(d.payment)||d.payment<0)return alert('Check the debt details.');data.debts=data.debts.filter(x=>x.id!==d.id);data.debts.push(d);if(save())clearDebt()};
 $('debtList').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.editDebt||b.dataset.deleteDebt,d=data.debts.find(x=>x.id===id);if(!d)return;if(b.dataset.deleteDebt){if(confirm('Delete this debt?')){data.debts=data.debts.filter(x=>x.id!==id);save()}}else{$('debtId').value=d.id;$('debtName').value=d.name;$('debtOriginal').value=d.original;$('debtRemaining').value=d.remaining;$('debtPayment').value=d.payment;window.scrollTo(0,0)}};
+function backupObject(){return {app:'Elevor360D Personal Budget Manager',version:7,...data}}
+function backupNow(prefix='elevor360d-budget-backup'){download(prefix+'-'+today()+'.json',JSON.stringify(backupObject(),null,2),'application/json')}
+function dataCounts(d){return `${d.transactions.length} transactions, ${d.bills.length} bills, ${d.goals.length} savings goals and ${(d.debts||[]).length} debts`}
 function download(filename,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-$('exportJson').onclick=()=>download('elevor360d-budget-backup-'+today()+'.json',JSON.stringify({app:'Elevor360D Personal Budget Manager',version:5,...data},null,2),'application/json');
+$('exportJson').onclick=()=>{backupNow();$('dataStatus').textContent='Backup requested: '+dataCounts(data)+'. Check your Downloads folder.'};
 $('exportCsv').onclick=()=>{const rows=[['Date','Type','Category','Description','Amount GBP'],...data.transactions.map(t=>[t.date,t.type,t.category,t.note||'',t.amount])];const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');download('budget-transactions-'+today()+'.csv','\uFEFF'+csv,'text/csv;charset=utf-8')};
-$('restoreFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>5e6)throw Error('File too large');const d=JSON.parse(await file.text());if(!valid(d))throw Error('Invalid or incompatible backup');if(!confirm('Replace ALL current data with this backup?'))return;data={transactions:d.transactions,budgets:d.budgets,bills:d.bills,goals:d.goals,debts:d.debts||[]};save();alert('Backup restored.')}catch(err){alert('Restore failed: '+err.message)}finally{e.target.value=''}};
+$('restoreFile').onchange=async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{
+  if(file.size>5e6)throw Error('File too large (maximum 5 MB)');
+  const d=JSON.parse(await file.text());if(!valid(d))throw Error('Invalid or incompatible backup');
+  const message=`Backup: ${file.name}\nContains: ${dataCounts(d)}.\n\nCurrent device: ${dataCounts(data)}.\n\nRestore will REPLACE all current records. Continue?`;
+  if(!confirm(message))return;
+  if(confirm('Download a safety backup of your CURRENT records before replacing them?')){backupNow('elevor360d-before-restore');alert('Safety backup requested. Please check your Downloads folder before continuing.');}
+  if(!confirm('Final confirmation: replace current records with the selected backup?'))return;
+  const previous=data;
+  data={transactions:d.transactions,budgets:d.budgets,bills:d.bills,goals:d.goals,debts:d.debts||[]};
+  if(!save()){data=previous;render();throw Error('Device storage could not be updated; existing records have been retained')}
+  clearTx();clearBill();clearGoal();clearDebt();
+  $('dataStatus').textContent='Restored '+dataCounts(data)+'.';alert('Backup restored successfully.');
+ }catch(err){alert('Restore failed: '+err.message)}finally{e.target.value=''}
+};
 $('wipe').onclick=()=>{if(confirm('Permanently delete ALL saved budget data on this device?')&&confirm('Are you absolutely sure? This cannot be undone without a backup.')){data=blank();save();clearTx();clearBill();clearGoal();clearDebt();alert('Data deleted.')}};
 let deferredPrompt=null;
 const installPanel=$('installPanel'),installButton=$('installBtn'),installHelp=$('installHelp');
