@@ -1,7 +1,1 @@
-Elevor360D Personal Budget Manager V8.2 — Startup Fix
-
-Fixes the missing updateInstallButton() function call that prevented app.js from loading after successful licence activation. Preserves the working Cloudflare licence activation, two-device policy, V7 budgeting functionality, main-screen Install App button, and existing local storage keys.
-
-Upload ALL nine files from this ZIP to your existing GitHub Pages repository. Replace old files, wait for Pages deployment, then refresh Chrome online. Check the page says Version 8.2. The licence should remain saved. Test menu, Add expense, Install App and reopening the installed app offline. Back up any existing budget data before updating.
-
-This patch was syntax-checked but not tested against your live Cloudflare Worker.
+V8.3 BUTTON FIX: Loads the complete budgeting app on page load, rather than dynamically after activation. The licence screen still covers and locks the interface until a valid licence is accepted. Retains existing app ID, Cloudflare Worker, device ID and licence storage keys. All budget features unchanged. Upload all nine files to the same GitHub Pages repository and refresh online. Back up data before updating. Do not clear site data or revoke licences.
