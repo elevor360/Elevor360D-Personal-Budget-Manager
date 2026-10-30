@@ -1,15 +1,40 @@
-Elevor360D PERSONAL BUDGET MANAGER V7 — FINAL FEATURE DEVELOPMENT RELEASE
+GARDENER QUOTE PRO V4 — Elevor360D
 
-UPDATES:
-- Restore preview shows the file name and record counts before replacing data.
-- Optional safety backup download of current records before restore, plus final confirmation.
-- Restore recovers in-memory data if local storage cannot be saved.
-- Backup export shows a confirmation/status and record counts.
-- Clearer mobile spacing, button sizing and accessible status messages.
-- Backup JSON now records version 7 (older compatible backups still supported).
+FINAL ETSY-READY EDITION
 
-RETAINED: V6 compact mobile menu, main-page working Install App button, budget and transaction tracking, bills, debts, savings goals, insights, six-month trend, annual report, CSV export, JSON backup/restore, offline PWA.
+Upload the CONTENTS of this folder to the root of your GitHub repository.
+Do not upload only the ZIP if you want GitHub Pages to run the app.
 
-INSTALL: Upload ALL six web files to your existing HTTPS GitHub Pages repository, replacing old files. Refresh while online and reopen the installed app. Your device-local data key remains unchanged.
-BEFORE UPDATING: Use Backup & Install > Download JSON backup, and store the backup safely.
-NOTE: No bank integration, cloud sync or licensing included in this build. Browser print supports Save as PDF.
+Main files:
+- index.html
+- style.css
+- app.js
+- manifest.webmanifest
+- sw.js
+- icon.svg
+
+V4 includes:
+- Dashboard and quick-start workflow
+- Customer and property records
+- Gardening-specific garden area measurements
+- Quick gardening job presets
+- Materials and plants
+- Labour, waste, mileage and extra costs
+- Markup and optional VAT
+- Recurring maintenance frequency
+- Professional quotes and invoices
+- Deposits, payments and outstanding balances
+- Before/after job photos
+- Customer signatures
+- Actual expenses and estimated profit reporting
+- Reusable custom templates
+- Business details and logo
+- Built-in Help / User Guide
+- Backup / Restore and protected Reset
+- Installable offline PWA
+
+IMPORTANT
+App data is stored locally in the browser/device. Use Backup regularly.
+Always check measurements, prices, material quantities, VAT and final quotes before sending them to customers.
+
+Elevor360D
